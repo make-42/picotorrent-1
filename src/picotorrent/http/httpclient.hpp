@@ -5,7 +5,11 @@
 #include <wx/wx.h>
 #endif
 
-#include <Windows.h>
+#if defined _WIN64 || defined _WIN32
+# include <windows.h>
+#else
+# include <unistd.h>
+#endif
 #include <winhttp.h>
 
 #include <memory>

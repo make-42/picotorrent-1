@@ -42,17 +42,17 @@ find_package(Boost REQUIRED COMPONENTS log)
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
-add_subdirectory(vendor/sentry-crashpad)
+# add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
 
-gitversion_install()
-gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
-gitversion_showvariable(MajorMinorPatch GITVERSION_VAR_VERSION)
-gitversion_showvariable(Major           GITVERSION_VAR_VERSION_MAJOR)
-gitversion_showvariable(Minor           GITVERSION_VAR_VERSION_MINOR)
-gitversion_showvariable(Patch           GITVERSION_VAR_VERSION_PATCH)
-gitversion_showvariable(SemVer          GITVERSION_VAR_SEMVER)
-gitversion_showvariable(ShortSha        GITVERSION_VAR_SHORTSHA)
+# gitversion_install()
+# gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
+# gitversion_showvariable(MajorMinorPatch GITVERSION_VAR_VERSION)
+# gitversion_showvariable(Major           GITVERSION_VAR_VERSION_MAJOR)
+# gitversion_showvariable(Minor           GITVERSION_VAR_VERSION_MINOR)
+# gitversion_showvariable(Patch           GITVERSION_VAR_VERSION_PATCH)
+# gitversion_showvariable(SemVer          GITVERSION_VAR_SEMVER)
+# gitversion_showvariable(ShortSha        GITVERSION_VAR_SHORTSHA)
 
 # Get git commitish from dependencies
 git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/fmt           PICO_FMT_GIT_COMMITISH)
@@ -64,12 +64,15 @@ git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/wx            PICO_WX_GIT_COMMIT
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
 
 # Debug flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
 # Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+
+# Link flags
+set(CMAKE_CXX_FLAGS " -pthread ")
 
 add_library(
     sqlite
@@ -117,15 +120,16 @@ target_link_libraries(
     PRIVATE
     nlohmann_json::nlohmann_json
     sqlite
+    ${CMAKE_DL_LIBS}
 )
 
 add_executable(
     PicoTorrent
-    WIN32
+    # WIN32
 
     src/picotorrent/application
     src/picotorrent/buildinfo
-    src/picotorrent/crashpadinitializer
+    # src/picotorrent/crashpadinitializer
     src/picotorrent/main
     src/picotorrent/persistencemanager
     src/picotorrent/resources.rc
@@ -199,20 +203,20 @@ target_compile_definitions(
     PicoTorrent
     PRIVATE
     -D_UNICODE
-    -D_WIN32
-    -D_WIN32_WINNT=0x0600
+    #-D_WIN32
+    #-D_WIN32_WINNT=0x0600
     -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
+    #-DWIN32
+    #-DWIN32_LEAN_AND_MEAN
 
     -DLIBPICO_API_EXPORT
 
-    -DPICO_GIT_COMMITISH=${GITVERSION_VAR_SHORTSHA}
-    -DPICO_VERSION_MAJOR=${GITVERSION_VAR_VERSION_MAJOR}
-    -DPICO_VERSION_MINOR=${GITVERSION_VAR_VERSION_MINOR}
-    -DPICO_VERSION_PATCH=${GITVERSION_VAR_VERSION_PATCH}
+    # -DPICO_GIT_COMMITISH=${GITVERSION_VAR_SHORTSHA}
+    # -DPICO_VERSION_MAJOR=${GITVERSION_VAR_VERSION_MAJOR}
+    # -DPICO_VERSION_MINOR=${GITVERSION_VAR_VERSION_MINOR}
+    # -DPICO_VERSION_PATCH=${GITVERSION_VAR_VERSION_PATCH}
 
     -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
     -DPICO_LIBTORRENT_GIT_COMMITISH=${PICO_LIBTORRENT_GIT_COMMITISH}
@@ -220,7 +224,7 @@ target_compile_definitions(
     -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
-target_compile_options(PicoTorrent PRIVATE /guard:cf /W4 /WX)
+# target_compile_options(PicoTorrent PRIVATE /guard:cf /W4 /WX)
 
 target_include_directories(
     PicoTorrent
@@ -244,15 +248,14 @@ target_link_libraries(
     crypt32
     iphlpapi
     legacy_stdio_definitions
-    propsys
     shlwapi
     wininet
     winhttp
 
     # Crashpad
-    crashpad_client
-    crashpad_util
-    mini_chromium
+    # crashpad_client
+    # crashpad_util
+    # mini_chromium
 
     # fmt
     fmt
@@ -289,12 +292,12 @@ target_include_directories(Plugin_Updater PRIVATE include)
 target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 
 # Copy Crashpad handler
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:crashpad_handler>
-        $<TARGET_FILE_DIR:PicoTorrent>
-)
+# add_custom_command(
+#     TARGET PicoTorrent POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#         $<TARGET_FILE:crashpad_handler>
+#         $<TARGET_FILE_DIR:PicoTorrent>
+# )
 
 # Generate coredb
 add_custom_command(

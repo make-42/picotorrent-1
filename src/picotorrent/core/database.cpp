@@ -1,8 +1,14 @@
 #include "database.hpp"
 
-#include <Windows.h>
+#if defined _WIN64 || defined _WIN32
+# include <windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+#else
+# include <unistd.h>
+#endif
+
+
 
 #include <filesystem>
 #include <vector>

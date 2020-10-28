@@ -2,7 +2,11 @@
 
 #include <sstream>
 
+#if defined _WIN64 || defined _WIN32
 #include <WinSock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
 

@@ -7,9 +7,15 @@
 
 #include <sstream>
 
-#include <Windows.h>
+#if defined _WIN64 || defined _WIN32
+# include <windows.h>
 #include <ShlObj.h>
 #include <shlwapi.h>
+#else
+# include <unistd.h>
+#endif
+
+
 
 namespace fs = std::filesystem;
 

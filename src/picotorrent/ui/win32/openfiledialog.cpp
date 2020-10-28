@@ -1,7 +1,9 @@
 #include "openfiledialog.hpp"
 
 #define STRICT_TYPED_ITEMIDS
-#include <shlobj.h>
+#if defined _WIN64 || defined _WIN32
+#include <ShlObj.h>
+#endif
 #include <objbase.h>      // For COM headers
 #include <shobjidl.h>     // for IFileDialogEvents and IFileDialogControlEvents
 #include <shlwapi.h>
