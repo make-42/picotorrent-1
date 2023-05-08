@@ -16,11 +16,11 @@
 using pt::UI::TorrentDetailsTrackersPanel;
 using pt::UI::Models::TrackerListModel;
 
-TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow* parent, wxWindowID id)
+TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow *parent, wxWindowID id)
     : wxPanel(parent, id),
-    m_trackersModel(new Models::TrackerListModel()),
-    m_trackersView(new wxDataViewCtrl(this, wxID_ANY)),
-    m_torrent(nullptr)
+      m_trackersModel(new Models::TrackerListModel()),
+      m_trackersView(new wxDataViewCtrl(this, wxID_ANY)),
+      m_torrent(nullptr)
 {
     m_trackersView->AppendTextColumn(
         i18n("url"),
@@ -63,11 +63,12 @@ TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow* parent, wxWin
         wxALIGN_RIGHT);
 
     m_trackersView->AppendTextColumn(
-        i18n("next_announce"),
-        TrackerListModel::Column::NextAnnounce,
-        wxDATAVIEW_CELL_INERT,
-        FromDIP(120),
-        wxALIGN_RIGHT)->SetMinWidth(FromDIP(100));
+                      i18n("next_announce"),
+                      TrackerListModel::Column::NextAnnounce,
+                      wxDATAVIEW_CELL_INERT,
+                      FromDIP(120),
+                      wxALIGN_RIGHT)
+        ->SetMinWidth(FromDIP(100));
 
     // Ugly hack to prevent the last "real" column from stretching.
     m_trackersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), TrackerListModel::Column::_Max, 0));
@@ -82,7 +83,7 @@ TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow* parent, wxWin
     this->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &TorrentDetailsTrackersPanel::ShowTrackerContextMenu, this);
 }
 
-void TorrentDetailsTrackersPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsTrackersPanel::Refresh(pt::BitTorrent::TorrentHandle *torrent)
 {
     if (!torrent->IsValid())
     {
@@ -92,10 +93,9 @@ void TorrentDetailsTrackersPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent
 
     m_trackersModel->Update(torrent);
 
-    if (m_torrent == nullptr
-        || m_torrent->InfoHash() != torrent->InfoHash())
+    if (m_torrent == nullptr || m_torrent->InfoHash() != torrent->InfoHash())
     {
-        for (auto const& node : m_trackersModel->GetTierNodes())
+        for (auto const &node : m_trackersModel->GetTierNodes())
         {
             m_trackersView->Expand(node);
         }
@@ -110,14 +110,14 @@ void TorrentDetailsTrackersPanel::Reset()
     m_trackersModel->ResetTrackers();
 }
 
-void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
+void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent &evt)
 {
     if (m_torrent == nullptr)
     {
         return;
     }
 
-    auto item = static_cast<TrackerListModel::ListItem*>(evt.GetItem().GetID());
+    auto item = static_cast<TrackerListModel::ListItem *>(evt.GetItem().GetID());
 
     if (item == nullptr)
     {
@@ -126,20 +126,19 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
         addTrackerMenu.Append(ptID_CONTEXT_MENU_ADD_TRACKER, i18n("add_tracker"));
         addTrackerMenu.Bind(
             wxEVT_MENU,
-            [this](wxCommandEvent const&)
+            [this](wxCommandEvent const &)
             {
                 auto trackers = m_torrent->Trackers();
                 auto maxTier = std::max_element(
                     trackers.begin(),
                     trackers.end(),
-                    [](lt::announce_entry const& lhs, lt::announce_entry const& rhs)
+                    [](lt::announce_entry const &lhs, lt::announce_entry const &rhs)
                     { return lhs.tier < rhs.tier; });
 
                 Dialogs::AddTrackerDialog addDialog(this, wxID_ANY);
                 addDialog.SetTier(maxTier != trackers.end() ? maxTier->tier + 1 : 0);
-                
-                if (addDialog.ShowModal() == wxID_OK
-                    && addDialog.GetUrl().size() > 0)
+
+                if (addDialog.ShowModal() == wxID_OK && addDialog.GetUrl().size() > 0)
                 {
                     lt::announce_entry ae;
                     ae.tier = addDialog.GetTier();
@@ -178,21 +177,18 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
 
     menu.Bind(
         wxEVT_MENU,
-        [this, item](wxCommandEvent& evt)
+        [this, item](wxCommandEvent &evt)
         {
             auto originalTrackers = m_torrent->Trackers();
             auto selectedTracker = std::find_if(
                 originalTrackers.begin(),
                 originalTrackers.end(),
-                [&item](lt::announce_entry const& ae)
+                [&item](lt::announce_entry const &ae)
                 {
                     return ae.tier == item->tier && ae.url == item->key;
                 });
 
-            if ((evt.GetId() == ptID_CONTEXT_MENU_COPY_URL
-                || evt.GetId() == ptID_CONTEXT_MENU_FORCE_REANNOUNCE
-                || evt.GetId() == ptID_CONTEXT_MENU_SCRAPE)
-                && selectedTracker == originalTrackers.end())
+            if ((evt.GetId() == ptID_CONTEXT_MENU_COPY_URL || evt.GetId() == ptID_CONTEXT_MENU_FORCE_REANNOUNCE || evt.GetId() == ptID_CONTEXT_MENU_SCRAPE) && selectedTracker == originalTrackers.end())
             {
                 BOOST_LOG_TRIVIAL(warning) << "Could not find selected tracker in torrent trackers: " << item->key;
                 return;
@@ -228,7 +224,7 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
                     std::remove_if(
                         originalTrackers.begin(),
                         originalTrackers.end(),
-                        [item](auto const& ae)
+                        [item](auto const &ae)
                         {
                             return ae.tier == item->tier;
                         }));
@@ -243,7 +239,7 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
                     std::remove_if(
                         originalTrackers.begin(),
                         originalTrackers.end(),
-                        [item](auto const& ae)
+                        [item](auto const &ae)
                         {
                             return ae.tier == item->tier && ae.url == item->key;
                         }));

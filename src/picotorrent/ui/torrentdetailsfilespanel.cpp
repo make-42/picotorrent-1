@@ -18,11 +18,11 @@ enum
     ptID_CONTEXT_MENU_MAXIMUM,
 };
 
-TorrentDetailsFilesPanel::TorrentDetailsFilesPanel(wxWindow* parent, wxWindowID id)
+TorrentDetailsFilesPanel::TorrentDetailsFilesPanel(wxWindow *parent, wxWindowID id)
     : wxPanel(parent, id),
-    m_fileList(new TorrentFileListView(this, wxID_ANY)),
-    m_filesModel(new Models::FileStorageModel()),
-    m_torrent(nullptr)
+      m_fileList(new TorrentFileListView(this, wxID_ANY)),
+      m_filesModel(new Models::FileStorageModel()),
+      m_torrent(nullptr)
 {
     m_fileList->AssociateModel(m_filesModel);
     m_filesModel->DecRef();
@@ -34,7 +34,7 @@ TorrentDetailsFilesPanel::TorrentDetailsFilesPanel(wxWindow* parent, wxWindowID 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &TorrentDetailsFilesPanel::ShowFileContextMenu, this, wxID_ANY);
 }
 
-void TorrentDetailsFilesPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsFilesPanel::Refresh(pt::BitTorrent::TorrentHandle *torrent)
 {
     if (!torrent->IsValid())
     {
@@ -47,9 +47,7 @@ void TorrentDetailsFilesPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
     {
         m_fileList->Freeze();
 
-        if (m_torrent == nullptr
-            || m_torrent->InfoHash() != torrent->InfoHash()
-            || m_torrentPrevFileCount != tf->num_files())
+        if (m_torrent == nullptr || m_torrent->InfoHash() != torrent->InfoHash() || m_torrentPrevFileCount != tf->num_files())
         {
             m_torrent = torrent;
             m_torrentPrevFileCount = tf->num_files();
@@ -58,7 +56,10 @@ void TorrentDetailsFilesPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
 
             wxDataViewItemArray children;
             m_filesModel->GetChildren(m_filesModel->GetRootItem(), children);
-            for (auto const& child : children) { m_fileList->Expand(child); }
+            for (auto const &child : children)
+            {
+                m_fileList->Expand(child);
+            }
         }
 
         std::vector<int64_t> progress;
@@ -78,7 +79,7 @@ void TorrentDetailsFilesPanel::Reset()
     m_filesModel->Cleared();
 }
 
-void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent&)
+void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent &)
 {
     wxDataViewItemArray items;
     m_fileList->GetSelections(items);
@@ -91,8 +92,8 @@ void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent&)
     auto priorities = m_torrent->GetFilePriorities();
     auto fileIndices = m_filesModel->GetFileIndices(items);
     auto firstPrio = priorities.size() > 0
-        ? priorities[static_cast<int>(fileIndices[0])]
-        : lt::default_priority;
+                         ? priorities[static_cast<int>(fileIndices[0])]
+                         : lt::default_priority;
 
     auto allSamePrio = std::all_of(
         fileIndices.begin(),
@@ -101,12 +102,12 @@ void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent&)
         {
             int i32 = static_cast<int>(i);
             auto p = priorities.size() >= i32 + size_t(1)
-                ? priorities[i32]
-                : lt::default_priority;
+                         ? priorities[i32]
+                         : lt::default_priority;
             return firstPrio == p;
         });
 
-    wxMenu* prioMenu = new wxMenu();
+    wxMenu *prioMenu = new wxMenu();
     prioMenu->AppendCheckItem(ptID_CONTEXT_MENU_MAXIMUM, i18n("maximum"))
         ->Check(allSamePrio && firstPrio == lt::top_priority);
     prioMenu->AppendCheckItem(ptID_CONTEXT_MENU_NORMAL, i18n("normal"))
@@ -121,7 +122,7 @@ void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent&)
     menu.AppendSubMenu(prioMenu, i18n("priority"));
     menu.Bind(
         wxEVT_MENU,
-        [this, &fileIndices, &priorities](wxCommandEvent& evt)
+        [this, &fileIndices, &priorities](wxCommandEvent &evt)
         {
             auto set = [&fileIndices, &priorities](lt::download_priority_t p)
             {

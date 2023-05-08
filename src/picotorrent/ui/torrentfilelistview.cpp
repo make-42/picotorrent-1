@@ -6,7 +6,7 @@
 using pt::UI::TorrentFileListView;
 using pt::UI::Models::FileStorageModel;
 
-TorrentFileListView::TorrentFileListView(wxWindow* parent, wxWindowID id)
+TorrentFileListView::TorrentFileListView(wxWindow *parent, wxWindowID id)
     : wxDataViewCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE, wxDefaultValidator, "TorrentFileListView")
 {
     auto nameCol = AppendIconTextColumn(

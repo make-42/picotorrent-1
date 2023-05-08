@@ -10,8 +10,8 @@
 #include <sqlite3.h>
 #include <wx/hyperlink.h>
 #include <wx/listctrl.h>
-#include <wx/statbmp.h>
 #include <wx/sizer.h>
+#include <wx/statbmp.h>
 #include <wx/version.h>
 
 #include "../../buildinfo.hpp"
@@ -20,8 +20,9 @@
 using json = nlohmann::json;
 using pt::UI::Dialogs::AboutDialog;
 
-AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
-    : wxDialog(parent, id, i18n("about_picotorrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+AboutDialog::AboutDialog(wxWindow *parent, wxWindowID id)
+    : wxDialog(parent, id, i18n("about_picotorrent"), wxDefaultPosition,
+               wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
     wxIcon icon(L"AppIcon", wxBITMAP_TYPE_ICO_RESOURCE, 128, 128);
     auto bmp = new wxStaticBitmap(this, wxID_ANY, icon);
@@ -32,19 +33,16 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     lv->AppendColumn(i18n("commitish"), wxLIST_FORMAT_LEFT, FromDIP(80));
 
     std::stringstream boostVersion;
-    boostVersion << BOOST_VERSION / 100000 << "."
-        << BOOST_VERSION / 100 % 1000 << "."
-        << BOOST_VERSION % 100;
+    boostVersion << BOOST_VERSION / 100000 << "." << BOOST_VERSION / 100 % 1000
+                 << "." << BOOST_VERSION % 100;
 
     std::stringstream fmtVersion;
-    fmtVersion << FMT_VERSION / 10000 << "."
-        << FMT_VERSION % 10000 / 100 << "."
-        << FMT_VERSION % 100;
+    fmtVersion << FMT_VERSION / 10000 << "." << FMT_VERSION % 10000 / 100 << "."
+               << FMT_VERSION % 100;
 
     std::stringstream nljson;
-    nljson << NLOHMANN_JSON_VERSION_MAJOR << "."
-        << NLOHMANN_JSON_VERSION_MINOR << "."
-        << NLOHMANN_JSON_VERSION_PATCH;
+    nljson << NLOHMANN_JSON_VERSION_MAJOR << "." << NLOHMANN_JSON_VERSION_MINOR
+           << "." << NLOHMANN_JSON_VERSION_PATCH;
 
     lv->InsertItem(lv->GetItemCount(), "Boost");
     lv->SetItem(lv->GetItemCount() - 1, 1, boostVersion.str());
@@ -78,13 +76,18 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     lv->SetItem(lv->GetItemCount() - 1, 1, wxVERSION_NUM_DOT_STRING_T);
     lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
-    auto desc = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+    auto desc = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                               wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
     desc->AppendText(i18n("picotorrent_description"));
 
     auto footerSizer = new wxBoxSizer(wxHORIZONTAL);
-    footerSizer->Add(new wxStaticText(this, wxID_ANY, i18n("copyright_text")));
+    auto copyright_text =
+        new wxStaticText(this, wxID_ANY, i18n("copyright_text"));
+    footerSizer->Add(copyright_text);
     footerSizer->AddStretchSpacer();
-    footerSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, "https://picotorrent.org", "https://picotorrent.org?app"));
+    footerSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY,
+                                         "https://picotorrent.org",
+                                         "https://picotorrent.org?app"));
 
     auto border = FromDIP(11);
     auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -100,6 +103,4 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     this->SetSize(FromDIP(wxSize(300, 450)));
 }
 
-AboutDialog::~AboutDialog()
-{
-}
+AboutDialog::~AboutDialog() {}

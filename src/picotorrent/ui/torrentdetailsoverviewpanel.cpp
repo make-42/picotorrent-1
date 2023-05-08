@@ -14,22 +14,21 @@
 #include "translator.hpp"
 #include "widgets/pieceprogressbar.hpp"
 
-#include "theming/theming.hpp"
-
 using pt::UI::TorrentDetailsOverviewPanel;
 
 static wxStaticText *BoldLabel(wxWindow *parent, wxWindowID id,
-                               wxString const &text) {
+                               wxString const &text)
+{
   auto s = new wxStaticText(parent, id, text);
   auto f = s->GetFont();
   f.SetWeight(wxFONTWEIGHT_BOLD);
   s->SetFont(f);
-  s->SetBackgroundColour(themeColor(0));
-  s->SetForegroundColour(themeColor(1));
+
   return s;
 }
 
-std::wstring SecondsToFriendly(std::chrono::seconds secs) {
+std::wstring SecondsToFriendly(std::chrono::seconds secs)
+{
   std::chrono::hours hours_left =
       std::chrono::duration_cast<std::chrono::hours>(secs);
   std::chrono::minutes min_left =
@@ -38,8 +37,10 @@ std::wstring SecondsToFriendly(std::chrono::seconds secs) {
       std::chrono::duration_cast<std::chrono::seconds>(secs - hours_left -
                                                        min_left);
 
-  if (hours_left.count() <= 0) {
-    if (min_left.count() <= 0) {
+  if (hours_left.count() <= 0)
+  {
+    if (min_left.count() <= 0)
+    {
       return fmt::format(i18n("eta_s_format"), sec_left.count());
     }
 
@@ -51,12 +52,15 @@ std::wstring SecondsToFriendly(std::chrono::seconds secs) {
                      min_left.count(), sec_left.count());
 }
 
-class CopyableStaticText : public wxStaticText {
+class CopyableStaticText : public wxStaticText
+{
 public:
   CopyableStaticText(wxWindow *parent)
       : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize,
-                     wxST_ELLIPSIZE_END | wxST_NO_AUTORESIZE) {
-    this->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent const &) {
+                     wxST_ELLIPSIZE_END | wxST_NO_AUTORESIZE)
+  {
+    this->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent const &)
+               {
       if (this->GetLabel() == "-") {
         return;
       }
@@ -69,9 +73,7 @@ public:
           wxTheClipboard->Close();
         }
       });
-
-      PopupMenu(&menu);
-    });
+      PopupMenu(&menu); });
   }
 };
 
@@ -91,10 +93,12 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow *parent,
       m_lastDownload(new CopyableStaticText(this)),
       m_lastUpload(new CopyableStaticText(this)),
       m_totalDownload(new CopyableStaticText(this)),
-      m_totalUpload(new CopyableStaticText(this)) {
+      m_totalUpload(new CopyableStaticText(this))
+{
   m_sizer = new wxFlexGridSizer(cols * 2, FromDIP(10), FromDIP(10));
 
-  for (int i = 0; i < cols; i++) {
+  for (int i = 0; i < cols; i++)
+  {
     m_sizer->AddGrowableCol(i * 2 + 1, 1);
   }
 
@@ -130,7 +134,8 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow *parent,
 
   m_mainSizer = new wxBoxSizer(wxVERTICAL);
 
-  if (showPieceProgress) {
+  if (showPieceProgress)
+  {
     m_pieceProgress = new Widgets::PieceProgressBar(this, wxID_ANY);
     m_mainSizer->Add(m_pieceProgress, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT,
                      FromDIP(5));
@@ -144,10 +149,12 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow *parent,
 }
 
 void TorrentDetailsOverviewPanel::Refresh(
-    pt::BitTorrent::TorrentHandle *torrent) {
+    pt::BitTorrent::TorrentHandle *torrent)
+{
   auto status = torrent->Status();
 
-  if (m_pieceProgress != nullptr) {
+  if (m_pieceProgress != nullptr)
+  {
     m_pieceProgress->UpdateBitfield(status.pieces);
   }
 
@@ -161,13 +168,15 @@ void TorrentDetailsOverviewPanel::Refresh(
   std::wstring activityDown = i18n("last_activity_unknown");
   std::wstring activityUp = i18n("last_activity_unknown");
 
-  if (status.lastDownload.count() >= 0) {
+  if (status.lastDownload.count() >= 0)
+  {
     activityDown = status.lastDownload.count() < 2
                        ? i18n("last_activity_just_now")
                        : SecondsToFriendly(status.lastDownload);
   }
 
-  if (status.lastUpload.count() >= 0) {
+  if (status.lastUpload.count() >= 0)
+  {
     activityUp = status.lastUpload.count() < 2
                      ? i18n("last_activity_just_now")
                      : SecondsToFriendly(status.lastUpload);
@@ -178,15 +187,19 @@ void TorrentDetailsOverviewPanel::Refresh(
   m_totalDownload->SetLabel(Utils::toHumanFileSize(status.allTimeDownload));
   m_totalUpload->SetLabel(Utils::toHumanFileSize(status.allTimeUpload));
 
-  if (auto tf = status.torrentFile.lock()) {
+  if (auto tf = status.torrentFile.lock())
+  {
     m_comment->SetLabel(tf->comment());
     m_priv->SetLabel(tf->priv() ? i18n("yes") : i18n("no"));
 
-    if (tf->total_size() != status.totalWanted) {
+    if (tf->total_size() != status.totalWanted)
+    {
       m_size->SetLabel(fmt::format(i18n("d_of_d"),
                                    Utils::toHumanFileSize(status.totalWanted),
                                    Utils::toHumanFileSize(tf->total_size())));
-    } else {
+    }
+    else
+    {
       m_size->SetLabel(Utils::toHumanFileSize(status.totalWanted));
     }
   }
@@ -194,8 +207,10 @@ void TorrentDetailsOverviewPanel::Refresh(
   this->Layout();
 }
 
-void TorrentDetailsOverviewPanel::Reset() {
-  if (m_pieceProgress != nullptr) {
+void TorrentDetailsOverviewPanel::Reset()
+{
+  if (m_pieceProgress != nullptr)
+  {
     m_pieceProgress->UpdateBitfield({});
   }
 
@@ -213,27 +228,34 @@ void TorrentDetailsOverviewPanel::Reset() {
   m_totalUpload->SetLabel("-");
 }
 
-void TorrentDetailsOverviewPanel::UpdateView(int cols, bool showPieceProgress) {
-  if (showPieceProgress && m_pieceProgress == nullptr) {
+void TorrentDetailsOverviewPanel::UpdateView(int cols, bool showPieceProgress)
+{
+  if (showPieceProgress && m_pieceProgress == nullptr)
+  {
     m_pieceProgress = new Widgets::PieceProgressBar(this, wxID_ANY);
     m_mainSizer->Insert(0, m_pieceProgress, 0,
                         wxEXPAND | wxTOP | wxRIGHT | wxLEFT, FromDIP(5));
-  } else if (!showPieceProgress && m_pieceProgress != nullptr) {
+  }
+  else if (!showPieceProgress && m_pieceProgress != nullptr)
+  {
     m_mainSizer->Remove(0);
 
     delete m_pieceProgress;
     m_pieceProgress = nullptr;
   }
 
-  for (int i = 0; i < m_sizer->GetCols(); i++) {
-    if (m_sizer->IsColGrowable(i)) {
+  for (int i = 0; i < m_sizer->GetCols(); i++)
+  {
+    if (m_sizer->IsColGrowable(i))
+    {
       m_sizer->RemoveGrowableCol(i);
     }
   }
 
   m_sizer->SetCols(cols * 2);
 
-  for (int i = 0; i < cols; i++) {
+  for (int i = 0; i < cols; i++)
+  {
     m_sizer->AddGrowableCol(i * 2 + 1, 1);
   }
 

@@ -23,14 +23,14 @@
 
 using pt::UI::Dialogs::AddTorrentDialog;
 
-AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torrent_params& params, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::BitTorrent::Session> session)
+AddTorrentDialog::AddTorrentDialog(wxWindow *parent, wxWindowID id, lt::add_torrent_params &params, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::BitTorrent::Session> session)
     : wxDialog(parent, id, GetTorrentDisplayName(params), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-    m_params(params),
-    m_db(db),
-    m_cfg(cfg),
-    m_session(session),
-    m_filesModel(new Models::FileStorageModel(std::bind(&AddTorrentDialog::SetFilePriorities, this, std::placeholders::_1, std::placeholders::_2))),
-    m_splitter(new wxSplitterWindow(this, wxID_ANY))
+      m_params(params),
+      m_db(db),
+      m_cfg(cfg),
+      m_session(session),
+      m_filesModel(new Models::FileStorageModel(std::bind(&AddTorrentDialog::SetFilePriorities, this, std::placeholders::_1, std::placeholders::_2))),
+      m_splitter(new wxSplitterWindow(this, wxID_ANY))
 {
     m_splitter->SetWindowStyleFlag(
         m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE | wxSP_BORDER);
@@ -58,7 +58,8 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     auto optionsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
     optionsGrid->AddGrowableCol(1, 1);
-    optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("label")), 0, wxALIGN_CENTER_VERTICAL);
+    auto label_text_elem = new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("label"));
+    optionsGrid->Add(label_text_elem, 0, wxALIGN_CENTER_VERTICAL);
     optionsGrid->Add(m_torrentLabel, 1, wxEXPAND | wxALL, FromDIP(3));
 
     auto flagsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
@@ -110,13 +111,17 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     auto infoGrid = new wxFlexGridSizer(2, FromDIP(3), FromDIP(15));
     infoGrid->AddGrowableCol(1, 0);
-    infoGrid->Add(new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("name")), 0, wxEXPAND);
+    auto name_text_elem = new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("name"));
+    infoGrid->Add(name_text_elem, 0, wxEXPAND);
     infoGrid->Add(m_torrentName, 0, wxEXPAND);
-    infoGrid->Add(new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("size")));
+    auto size_text_elem = new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("size"));
+    infoGrid->Add(size_text_elem);
     infoGrid->Add(m_torrentSize, 0, wxEXPAND);
-    infoGrid->Add(new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("info_hash")));
+    auto info_hash_text_elem = new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("info_hash"));
+    infoGrid->Add(info_hash_text_elem);
     infoGrid->Add(m_torrentInfoHash, 0, wxEXPAND);
-    infoGrid->Add(new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("comment")));
+    auto comment_hash_text_elem = new wxStaticText(contentsSizer->GetStaticBox(), wxID_ANY, i18n("comment"));
+    infoGrid->Add(comment_hash_text_elem);
     infoGrid->Add(m_torrentComment, 0, wxEXPAND);
     contentsSizer->Add(infoGrid, 0, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, FromDIP(3));
     contentsSizer->Add(m_filesView, 1, wxEXPAND | wxALL, FromDIP(3));
@@ -157,7 +162,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
     m_filesModel->DecRef();
 
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxButton* ok = new wxButton(this, ptID_OK, i18n("ok"));
+    wxButton *ok = new wxButton(this, ptID_OK, i18n("ok"));
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
@@ -180,7 +185,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     m_torrentLabel->Append(i18n("none"), wxNullBitmap, new ClientData<Core::Configuration::Label>(lbl));
 
-    for (auto const& label : cfg->GetLabels())
+    for (auto const &label : cfg->GetLabels())
     {
         wxBitmap bmp = wxNullBitmap;
 
@@ -214,23 +219,23 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     m_trackers->Bind(
         wxEVT_LIST_ITEM_SELECTED,
-        [this](wxListEvent&) { m_removeTracker->Enable(); });
+        [this](wxListEvent &)
+        { m_removeTracker->Enable(); });
 
     m_trackers->Bind(
         wxEVT_LIST_ITEM_DESELECTED,
-        [this](wxListEvent&) { m_removeTracker->Enable(false); });
+        [this](wxListEvent &)
+        { m_removeTracker->Enable(false); });
 
     this->Bind(
         wxEVT_COMBOBOX,
-        [this](wxCommandEvent&)
+        [this](wxCommandEvent &)
         {
-            auto label = reinterpret_cast<ClientData<Core::Configuration::Label>*>(
+            auto label = reinterpret_cast<ClientData<Core::Configuration::Label> *>(
                 m_torrentLabel->GetClientObject(
                     m_torrentLabel->GetSelection()));
 
-            if (m_manualSavePath.find(m_params.info_hashes) == m_manualSavePath.end()
-                && label->GetValue().savePathEnabled
-                && !label->GetValue().savePath.empty())
+            if (m_manualSavePath.find(m_params.info_hashes) == m_manualSavePath.end() && label->GetValue().savePathEnabled && !label->GetValue().savePath.empty())
             {
                 m_params.save_path = label->GetValue().savePath;
                 m_torrentSavePath->ChangeValue(Utils::toStdWString(m_params.save_path));
@@ -242,7 +247,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     this->Bind(
         wxEVT_BUTTON,
-        [this](wxCommandEvent&)
+        [this](wxCommandEvent &)
         {
             wxDirDialog dlg(
                 m_parent,
@@ -261,7 +266,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     this->Bind(
         wxEVT_TEXT,
-        [this](wxCommandEvent&)
+        [this](wxCommandEvent &)
         {
             m_params.save_path = Utils::toStdString(m_torrentSavePath->GetValue().wc_str());
             m_manualSavePath.insert(m_params.info_hashes);
@@ -270,16 +275,22 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     this->Bind(
         wxEVT_CHECKBOX,
-        [this](wxCommandEvent&)
+        [this](wxCommandEvent &)
         {
-            if (m_sequentialDownload->IsChecked()) { m_params.flags |= lt::torrent_flags::sequential_download; }
-            else { m_params.flags &= ~lt::torrent_flags::sequential_download; }
+            if (m_sequentialDownload->IsChecked())
+            {
+                m_params.flags |= lt::torrent_flags::sequential_download;
+            }
+            else
+            {
+                m_params.flags &= ~lt::torrent_flags::sequential_download;
+            }
         },
         ptID_SEQUENTIAL_DOWNLOAD);
 
     this->Bind(
         wxEVT_CHECKBOX,
-        [this](wxCommandEvent&)
+        [this](wxCommandEvent &)
         {
             if (m_startTorrent->IsChecked())
             {
@@ -296,20 +307,26 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
 
     this->Bind(
         wxEVT_CHECKBOX,
-        [this](wxCommandEvent&)
+        [this](wxCommandEvent &)
         {
-            if (m_seedMode->IsChecked()) { m_params.flags |= lt::torrent_flags::seed_mode; }
-            else { m_params.flags &= ~lt::torrent_flags::seed_mode; }
+            if (m_seedMode->IsChecked())
+            {
+                m_params.flags |= lt::torrent_flags::seed_mode;
+            }
+            else
+            {
+                m_params.flags &= ~lt::torrent_flags::seed_mode;
+            }
         },
         ptID_SEED_MODE);
 
     this->Bind(wxEVT_BUTTON, &AddTorrentDialog::OnAddTracker, this, ptID_TRACKERS_ADD);
     this->Bind(wxEVT_BUTTON, &AddTorrentDialog::OnRemoveTracker, this, ptID_TRACKERS_REMOVE);
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &AddTorrentDialog::ShowFileContextMenu, this, ptID_FILE_LIST);
-    this->Bind(ptEVT_TORRENT_METADATA_FOUND, [this](BitTorrent::MetadataFoundEvent& evt) { this->MetadataFound(evt.GetData()); });
+    this->Bind(ptEVT_TORRENT_METADATA_FOUND, [this](BitTorrent::MetadataFoundEvent &evt)
+               { this->MetadataFound(evt.GetData()); });
     this->Bind(wxEVT_BUTTON, &AddTorrentDialog::OnCancel, this, ptID_CANCEL);
     this->Bind(wxEVT_BUTTON, &AddTorrentDialog::OnOk, this, ptID_OK);
-
     this->Load();
 }
 
@@ -317,7 +334,7 @@ AddTorrentDialog::~AddTorrentDialog()
 {
     {
         auto stmt = m_db->CreateStatement("INSERT INTO path_history (path, type, timestamp) VALUES(?, 'add_torrent_dialog', strftime('%s'))\n"
-            "ON CONFLICT (path, type) DO UPDATE SET timestamp = excluded.timestamp;");
+                                          "ON CONFLICT (path, type) DO UPDATE SET timestamp = excluded.timestamp;");
         stmt->Bind(1, m_params.save_path);
         stmt->Execute();
     }
@@ -326,18 +343,16 @@ AddTorrentDialog::~AddTorrentDialog()
     m_db->Execute("DELETE FROM path_history WHERE id NOT IN (SELECT id FROM path_history WHERE type = 'add_torrent_dialog' ORDER BY timestamp DESC LIMIT 5)");
 }
 
-void AddTorrentDialog::MetadataFound(std::shared_ptr<lt::torrent_info> const& ti)
+void AddTorrentDialog::MetadataFound(std::shared_ptr<lt::torrent_info> const &ti)
 {
-    if (m_params.info_hashes == ti->info_hashes()
-        || (ti->info_hashes().has_v1() && ti->info_hashes().v1 == m_params.info_hashes.v1)
-        || (ti->info_hashes().has_v2() && ti->info_hashes().v2 == m_params.info_hashes.v2))
+    if (m_params.info_hashes == ti->info_hashes() || (ti->info_hashes().has_v1() && ti->info_hashes().v1 == m_params.info_hashes.v1) || (ti->info_hashes().has_v2() && ti->info_hashes().v2 == m_params.info_hashes.v2))
     {
         m_params.ti = ti;
         Load();
     }
 }
 
-wxString AddTorrentDialog::GetTorrentDisplayName(libtorrent::add_torrent_params const& params)
+wxString AddTorrentDialog::GetTorrentDisplayName(libtorrent::add_torrent_params const &params)
 {
     if (params.ti)
     {
@@ -351,13 +366,15 @@ wxString AddTorrentDialog::GetTorrentDisplayName(libtorrent::add_torrent_params 
 
     std::stringstream hash;
 
-    if (params.info_hashes.has_v2()) hash << params.info_hashes.v2;
-    if (params.info_hashes.has_v1()) hash << params.info_hashes.v1;
+    if (params.info_hashes.has_v2())
+        hash << params.info_hashes.v2;
+    if (params.info_hashes.has_v1())
+        hash << params.info_hashes.v1;
 
     return hash.str();
 }
 
-wxString AddTorrentDialog::GetTorrentDisplaySize(libtorrent::add_torrent_params const& params)
+wxString AddTorrentDialog::GetTorrentDisplaySize(libtorrent::add_torrent_params const &params)
 {
     if (params.ti)
     {
@@ -367,7 +384,7 @@ wxString AddTorrentDialog::GetTorrentDisplaySize(libtorrent::add_torrent_params 
     return "-";
 }
 
-wxString AddTorrentDialog::GetTorrentDisplayInfoHash(libtorrent::add_torrent_params const& params)
+wxString AddTorrentDialog::GetTorrentDisplayInfoHash(libtorrent::add_torrent_params const &params)
 {
     std::stringstream hash;
 
@@ -401,7 +418,7 @@ wxString AddTorrentDialog::GetTorrentDisplayInfoHash(libtorrent::add_torrent_par
     return hash.str();
 }
 
-wxString AddTorrentDialog::GetTorrentDisplayComment(libtorrent::add_torrent_params const& params)
+wxString AddTorrentDialog::GetTorrentDisplayComment(libtorrent::add_torrent_params const &params)
 {
     if (params.ti)
     {
@@ -427,8 +444,7 @@ void AddTorrentDialog::Load()
     m_sequentialDownload->SetValue(
         (m_params.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download);
 
-    bool isPaused = (m_params.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused
-        && (m_params.flags & lt::torrent_flags::auto_managed) != lt::torrent_flags::auto_managed;
+    bool isPaused = (m_params.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused && (m_params.flags & lt::torrent_flags::auto_managed) != lt::torrent_flags::auto_managed;
 
     m_startTorrent->SetValue(!isPaused);
 
@@ -443,7 +459,10 @@ void AddTorrentDialog::Load()
 
         wxDataViewItemArray children;
         m_filesModel->GetChildren(m_filesModel->GetRootItem(), children);
-        for (auto const& child : children) { m_filesView->Expand(child); }
+        for (auto const &child : children)
+        {
+            m_filesView->Expand(child);
+        }
     }
     else
     {
@@ -454,7 +473,7 @@ void AddTorrentDialog::Load()
     m_torrentLabel->SetSelection(0);
     for (uint32_t i = 0; i < m_torrentLabel->GetCount(); i++)
     {
-        auto label = reinterpret_cast<ClientData<Core::Configuration::Label>*>(m_torrentLabel->GetClientObject(i));
+        auto label = reinterpret_cast<ClientData<Core::Configuration::Label> *>(m_torrentLabel->GetClientObject(i));
 
         if (label->GetValue().id == m_params.userdata.get<BitTorrent::AddParams>()->labelId)
         {
@@ -466,7 +485,7 @@ void AddTorrentDialog::Load()
     ReloadTrackers();
 }
 
-void AddTorrentDialog::OnAddTracker(wxCommandEvent&)
+void AddTorrentDialog::OnAddTracker(wxCommandEvent &)
 {
     AddTrackerDialog dlg(this, wxID_ANY);
     dlg.CenterOnParent();
@@ -482,12 +501,12 @@ void AddTorrentDialog::OnAddTracker(wxCommandEvent&)
     ReloadTrackers();
 }
 
-void AddTorrentDialog::OnCancel(wxCommandEvent&)
+void AddTorrentDialog::OnCancel(wxCommandEvent &)
 {
     Close();
 }
 
-void AddTorrentDialog::OnOk(wxCommandEvent&)
+void AddTorrentDialog::OnOk(wxCommandEvent &)
 {
     try
     {
@@ -497,14 +516,14 @@ void AddTorrentDialog::OnOk(wxCommandEvent&)
         m_session->AddTorrent(m_params);
         Close();
     }
-    catch (std::exception const& ex)
+    catch (std::exception const &ex)
     {
         BOOST_LOG_TRIVIAL(error) << "Failed to add torrent: " << ex.what();
         wxMessageBox(ex.what(), "PicoTorrent", wxICON_ERROR | wxOK, this);
     }
 }
 
-void AddTorrentDialog::OnRemoveTracker(wxCommandEvent&)
+void AddTorrentDialog::OnRemoveTracker(wxCommandEvent &)
 {
     long selected = m_trackers->GetFirstSelected();
 
@@ -548,7 +567,7 @@ void AddTorrentDialog::OnRemoveTracker(wxCommandEvent&)
     if (m_params.ti && tiTrackersRemoved > 0)
     {
         m_params.ti->clear_trackers();
-        for (auto const& ae : tiTrackers)
+        for (auto const &ae : tiTrackers)
         {
             m_params.ti->add_tracker(ae.url, ae.tier);
         }
@@ -565,7 +584,7 @@ void AddTorrentDialog::ReloadTrackers()
     // trackers
     if (m_params.ti)
     {
-        for (auto const& tracker : m_params.ti->trackers())
+        for (auto const &tracker : m_params.ti->trackers())
         {
             int row = m_trackers->GetItemCount();
 
@@ -591,7 +610,7 @@ void AddTorrentDialog::ReloadTrackers()
     m_trackers->Thaw();
 }
 
-void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::download_priority_t prio)
+void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray &items, lt::download_priority_t prio)
 {
     auto fileIndices = m_filesModel->GetFileIndices(items);
 
@@ -608,7 +627,7 @@ void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::downloa
     }
 }
 
-void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent&)
+void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent &)
 {
     wxDataViewItemArray items;
     m_filesView->GetSelections(items);
@@ -620,8 +639,8 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent&)
 
     auto fileIndices = m_filesModel->GetFileIndices(items);
     auto firstPrio = m_params.file_priorities.size() > 0
-        ? m_params.file_priorities[static_cast<int>(fileIndices[0])]
-        : lt::default_priority;
+                         ? m_params.file_priorities[static_cast<int>(fileIndices[0])]
+                         : lt::default_priority;
 
     auto allSamePrio = std::all_of(
         fileIndices.begin(),
@@ -630,12 +649,12 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent&)
         {
             size_t fileIdx = static_cast<size_t>(int32_t(i));
             auto p = m_params.file_priorities.size() >= fileIdx + 1
-                ? m_params.file_priorities[fileIdx]
-                : lt::default_priority;
+                         ? m_params.file_priorities[fileIdx]
+                         : lt::default_priority;
             return firstPrio == p;
         });
 
-    wxMenu* prioMenu = new wxMenu();
+    wxMenu *prioMenu = new wxMenu();
     prioMenu->AppendCheckItem(ptID_CONTEXT_MENU_MAXIMUM, i18n("maximum"))
         ->Check(allSamePrio && firstPrio == lt::top_priority);
     prioMenu->AppendCheckItem(ptID_CONTEXT_MENU_NORMAL, i18n("normal"))
@@ -650,7 +669,7 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent&)
     menu.AppendSubMenu(prioMenu, i18n("priority"));
     menu.Bind(
         wxEVT_MENU,
-        [this, &items](wxCommandEvent& evt)
+        [this, &items](wxCommandEvent &evt)
         {
             switch (evt.GetId())
             {

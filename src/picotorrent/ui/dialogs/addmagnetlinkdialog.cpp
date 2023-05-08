@@ -12,20 +12,22 @@
 namespace lt = libtorrent;
 using pt::UI::Dialogs::AddMagnetLinkDialog;
 
-AddMagnetLinkDialog::AddMagnetLinkDialog(wxWindow* parent, wxWindowID id)
+AddMagnetLinkDialog::AddMagnetLinkDialog(wxWindow *parent, wxWindowID id)
     : wxDialog(parent, id, i18n("add_magnet_link_s"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-    m_links(new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxTE_MULTILINE))
+      m_links(new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxTE_MULTILINE))
 {
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxButton* ok = new wxButton(this, wxID_OK);
+    wxButton *ok = new wxButton(this, wxID_OK);
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")), 0, wxLEFT, FromDIP(7));
+    wxButton *cancel = new wxButton(this, wxID_CANCEL, i18n("cancel"));
+    buttonsSizer->Add(cancel, 0, wxLEFT, FromDIP(7));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->AddSpacer(FromDIP(11));
-    mainSizer->Add(new wxStaticText(this, wxID_ANY, i18n("add_magnet_link_s_description")), 0, wxLEFT | wxRIGHT, FromDIP(11));
+    auto add_magnet_link_static_text = new wxStaticText(this, wxID_ANY, i18n("add_magnet_link_s_description"));
+    mainSizer->Add(add_magnet_link_static_text, 0, wxLEFT | wxRIGHT, FromDIP(11));
     mainSizer->AddSpacer(FromDIP(5));
     mainSizer->Add(m_links, 1, wxLEFT | wxRIGHT | wxEXPAND, FromDIP(11));
     mainSizer->AddSpacer(FromDIP(7));
@@ -78,7 +80,10 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
     while (tokenizer.HasMoreTokens())
     {
         std::string token = tokenizer.GetNextToken();
-        if (!IsMagnetLinkOrInfoHash(token)) { continue; }
+        if (!IsMagnetLinkOrInfoHash(token))
+        {
+            continue;
+        }
 
         switch (token.size())
         {
@@ -113,19 +118,17 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
     return result;
 }
 
-bool AddMagnetLinkDialog::IsMagnetLinkOrInfoHash(wxString const& str)
+bool AddMagnetLinkDialog::IsMagnetLinkOrInfoHash(wxString const &str)
 {
     std::regex infoHashV1("[a-fA-F\\d]{40}", std::regex_constants::icase);
     std::regex infoHashV2("[a-fA-F\\d]{68}", std::regex_constants::icase);
 
-    if (std::regex_match(str.ToStdString(), infoHashV1)
-        || std::regex_match(str.ToStdString(), infoHashV2))
+    if (std::regex_match(str.ToStdString(), infoHashV1) || std::regex_match(str.ToStdString(), infoHashV2))
     {
         return true;
     }
 
-    if (str.StartsWith("magnet:?xt=urn:btih:")
-        || str.StartsWith("magnet:?xt=urn:btmh:"))
+    if (str.StartsWith("magnet:?xt=urn:btih:") || str.StartsWith("magnet:?xt=urn:btmh:"))
     {
         return true;
     }

@@ -7,6 +7,7 @@
 #include <wx/persist.h>
 #include <wx/snglinst.h>
 #include <wx/taskbarbutton.h>
+#include <wx/sysopt.h>
 
 #include "api/libpico_impl.hpp"
 #include "core/configuration.hpp"
@@ -24,36 +25,47 @@ using pt::Application;
 
 Application::Application()
     : wxApp(), m_singleInstance(std::make_unique<wxSingleInstanceChecker>(
-                   "584c8e47-d8a5-4e52-9165-c0650a85723a")) {
+                   "584c8e47-d8a5-4e52-9165-c0650a85723a"))
+{
   SetProcessDPIAware();
+  // wxSystemOptions::SetOption("msw.dark-mode", 2);
 }
 
-Application::~Application() {
-  for (auto plugin : m_plugins) {
+Application::~Application()
+{
+  for (auto plugin : m_plugins)
+  {
     delete plugin;
   }
 }
 
-bool Application::OnCmdLineParsed(wxCmdLineParser &parser) {
+bool Application::OnCmdLineParsed(wxCmdLineParser &parser)
+{
   long waitForPid = -1;
   wxString save_path = "";
 
-  if (parser.Found("wait-for-pid", &waitForPid)) {
+  if (parser.Found("wait-for-pid", &waitForPid))
+  {
     m_options.pid = waitForPid;
   }
 
   m_options.silent = parser.Found("silent");
 
-  if (parser.Found("save-path", &save_path)) {
+  if (parser.Found("save-path", &save_path))
+  {
     m_options.save_path = Utils::toStdString(save_path.ToStdWstring());
   }
 
-  for (size_t i = 0; i < parser.GetParamCount(); i++) {
+  for (size_t i = 0; i < parser.GetParamCount(); i++)
+  {
     std::string arg = Utils::toStdString(parser.GetParam(i).ToStdWstring());
 
-    if (arg.rfind("magnet:?xt", 0) == 0) {
+    if (arg.rfind("magnet:?xt", 0) == 0)
+    {
       m_options.magnets.push_back(arg);
-    } else {
+    }
+    else
+    {
       m_options.files.push_back(std::filesystem::absolute(arg).string());
     }
   }
@@ -61,16 +73,20 @@ bool Application::OnCmdLineParsed(wxCmdLineParser &parser) {
   return true;
 }
 
-bool Application::OnInit() {
-  if (!wxApp::OnInit()) {
+bool Application::OnInit()
+{
+  if (!wxApp::OnInit())
+  {
     return false;
   }
 
-  if (m_options.pid > 0) {
+  if (m_options.pid > 0)
+  {
     WaitForPreviousInstance(m_options.pid);
   }
 
-  if (m_singleInstance->IsAnotherRunning()) {
+  if (m_singleInstance->IsAnotherRunning())
+  {
     ActivateOtherInstance();
     return false;
   }
@@ -80,7 +96,8 @@ bool Application::OnInit() {
 
   auto db = std::make_shared<pt::Core::Database>(env);
 
-  if (!db->Migrate()) {
+  if (!db->Migrate())
+  {
     wxMessageBox("Failed to run database migrations. Please check log file.",
                  "PicoTorrent", wxICON_ERROR);
     return false;
@@ -98,19 +115,26 @@ bool Application::OnInit() {
   pt::UI::Theming &theming = pt::UI::Theming::GetInstance();
   theming.LoadThemes();
   theming.SetCurrentTheme(cfg->Get<std::string>("theme_id").value_or("light"));
-
+  if (theming.GetMSWDarkMode())
+  {
+    wxApp::MSWEnableDarkMode();
+  }
   // Load plugins
-  for (auto &p : fs::directory_iterator(env->GetApplicationPath())) {
-    if (p.path().extension() != ".dll") {
+  for (auto &p : fs::directory_iterator(env->GetApplicationPath()))
+  {
+    if (p.path().extension() != ".dll")
+    {
       continue;
     }
 
     auto const &filename = p.path().filename().string();
 
-    if (filename.size() < 6) {
+    if (filename.size() < 6)
+    {
       continue;
     }
-    if (filename.substr(0, 6) != "Plugin") {
+    if (filename.substr(0, 6) != "Plugin")
+    {
       continue;
     }
 
@@ -118,7 +142,8 @@ bool Application::OnInit() {
 
     auto plugin = API::IPlugin::Load(p, env.get(), cfg.get());
 
-    if (plugin != nullptr) {
+    if (plugin != nullptr)
+    {
       m_plugins.push_back(plugin);
     }
   }
@@ -129,19 +154,22 @@ bool Application::OnInit() {
 
   auto mainFrame = new UI::MainFrame(env, db, cfg, m_options);
 
-  std::for_each(m_plugins.begin(), m_plugins.end(), [mainFrame](auto plugin) {
-    plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame);
-  });
+  std::for_each(m_plugins.begin(), m_plugins.end(), [mainFrame](auto plugin)
+                { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });
 
   auto windowState = static_cast<pt::Core::Configuration::WindowState>(
       cfg->Get<int>("start_position").value());
 
-  switch (windowState) {
+  switch (windowState)
+  {
   case pt::Core::Configuration::WindowState::Hidden:
     // Only valid if we have a notify icon
-    if (cfg->Get<bool>("show_in_notification_area").value()) {
+    if (cfg->Get<bool>("show_in_notification_area").value())
+    {
       mainFrame->MSWGetTaskBarButton()->Hide();
-    } else {
+    }
+    else
+    {
       mainFrame->Show(true);
     }
 
@@ -167,7 +195,8 @@ bool Application::OnInit() {
   return true;
 }
 
-void Application::OnInitCmdLine(wxCmdLineParser &parser) {
+void Application::OnInitCmdLine(wxCmdLineParser &parser)
+{
   static const wxCmdLineEntryDesc cmdLineDesc[] = {
       {wxCMD_LINE_OPTION, NULL, "wait-for-pid", NULL, wxCMD_LINE_VAL_NUMBER,
        wxCMD_LINE_PARAM_OPTIONAL},
@@ -183,7 +212,8 @@ void Application::OnInitCmdLine(wxCmdLineParser &parser) {
   parser.SetSwitchChars("-");
 }
 
-void Application::ActivateOtherInstance() {
+void Application::ActivateOtherInstance()
+{
   json j;
   j["files"] = m_options.files;
   j["magnet_links"] = m_options.magnets;
@@ -194,15 +224,18 @@ void Application::ActivateOtherInstance() {
   auto conn =
       client.MakeConnection("localhost", "PicoTorrent", "ApplicationOptions");
 
-  if (conn) {
+  if (conn)
+  {
     conn->Execute(j.dump());
     conn->Disconnect();
   }
 }
 
-void Application::WaitForPreviousInstance(long pid) {
+void Application::WaitForPreviousInstance(long pid)
+{
   HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
-  if (hProc == NULL) {
+  if (hProc == NULL)
+  {
     return;
   }
   WaitForSingleObject(hProc, 10000);

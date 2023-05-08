@@ -27,25 +27,31 @@ namespace lt = libtorrent;
 using pt::BitTorrent::Session;
 using pt::UI::Dialogs::CreateTorrentDialog;
 
-std::string branch_path(std::string const& f)
+std::string branch_path(std::string const &f)
 {
-    if (f.empty()) return f;
+    if (f.empty())
+        return f;
 
 #ifdef TORRENT_WINDOWS
-    if (f == "\\\\") return "";
+    if (f == "\\\\")
+        return "";
 #endif
-    if (f == "/") return "";
+    if (f == "/")
+        return "";
 
     auto len = f.size();
     // if the last character is / or \ ignore it
-    if (f[len - 1] == '/' || f[len - 1] == '\\') --len;
-    while (len > 0) {
+    if (f[len - 1] == '/' || f[len - 1] == '\\')
+        --len;
+    while (len > 0)
+    {
         --len;
         if (f[len] == '/' || f[len] == '\\')
             break;
     }
 
-    if (f[len] == '/' || f[len] == '\\') ++len;
+    if (f[len] == '/' || f[len] == '\\')
+        ++len;
     return std::string(f.c_str(), len);
 }
 
@@ -80,9 +86,9 @@ struct StopPayload
     std::string bp;
 };
 
-CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::shared_ptr<Session> session)
+CreateTorrentDialog::CreateTorrentDialog(wxWindow *parent, wxWindowID id, std::shared_ptr<Session> session)
     : wxDialog(parent, id, i18n("create_torrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-    m_session(session)
+      m_session(session)
 {
     auto pathSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("files"));
     m_numFiles = new wxStaticText(pathSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
@@ -116,11 +122,14 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::s
 
     auto optionsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(25));
     optionsGrid->AddGrowableCol(1, 1);
-    optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("mode")), 0, wxALL, FromDIP(3));
+    auto mode_text_elem = new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("mode"));
+    optionsGrid->Add(mode_text_elem, 0, wxALL, FromDIP(3));
     optionsGrid->Add(m_mode, 1, wxEXPAND | wxALL, FromDIP(3));
-    optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("comment")), 0, wxALL, FromDIP(3));
+    auto comment_text_elem = new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("comment"));
+    optionsGrid->Add(comment_text_elem, 0, wxALL, FromDIP(3));
     optionsGrid->Add(m_comment, 1, wxEXPAND | wxALL, FromDIP(3));
-    optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("creator")), 0, wxALL, FromDIP(3));
+    auto creator_text_elem = new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("creator"));
+    optionsGrid->Add(creator_text_elem, 0, wxALL, FromDIP(3));
     optionsGrid->Add(m_creator, 1, wxEXPAND | wxALL, FromDIP(3));
     optionsGrid->AddStretchSpacer(0);
 
@@ -159,7 +168,8 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::s
     buttonsSizer->AddStretchSpacer();
     buttonsSizer->Add(m_create);
     buttonsSizer->AddSpacer(FromDIP(7));
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
+    auto cancel = new wxButton(this, wxID_CANCEL, i18n("cancel"));
+    buttonsSizer->Add(cancel);
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(pathSizer, 0, wxEXPAND | wxALL, FromDIP(11));
@@ -177,89 +187,95 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::s
     this->Bind(wxEVT_BUTTON, &CreateTorrentDialog::OnCreateTorrent, this, ptID_BTN_CREATE_TORRENT);
 
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_START,
-        [this](wxThreadEvent&)
-        {
-            m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_adding_files")));
-            this->SetEnabledState(false);
-        });
+               [this](wxThreadEvent &)
+               {
+                   m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_adding_files")));
+                   this->SetEnabledState(false);
+               });
 
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_ERROR,
-        [this](wxThreadEvent& evt)
-        {
-            this->SetCursor(wxCURSOR_DEFAULT);
-            this->SetEnabledState(true);
+               [this](wxThreadEvent &evt)
+               {
+                   this->SetCursor(wxCURSOR_DEFAULT);
+                   this->SetEnabledState(true);
 
-            std::string err = evt.GetPayload<std::string>();
-            wxMessageBox(err, "PicoTorrent", wxICON_ERROR, this);
+                   std::string err = evt.GetPayload<std::string>();
+                   wxMessageBox(err, "PicoTorrent", wxICON_ERROR, this);
 
-            m_status->SetLabel(fmt::format(i18n("status_s"), Utils::toStdWString(err)));
-        });
+                   m_status->SetLabel(fmt::format(i18n("status_s"), Utils::toStdWString(err)));
+               });
 
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_STOP,
-        [this](wxThreadEvent& evt)
-        {
-            this->SetCursor(wxCURSOR_DEFAULT);
-            this->SetEnabledState(true);
+               [this](wxThreadEvent &evt)
+               {
+                   this->SetCursor(wxCURSOR_DEFAULT);
+                   this->SetEnabledState(true);
 
-            m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_saving_torrent")));
+                   m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_saving_torrent")));
 
-            wxFileDialog save(
-                this,
-                wxEmptyString,
-                wxEmptyString,
-                wxEmptyString,
-                "Torrent file (*.torrent)|*.torrent",
-                wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+                   wxFileDialog save(
+                       this,
+                       wxEmptyString,
+                       wxEmptyString,
+                       wxEmptyString,
+                       "Torrent file (*.torrent)|*.torrent",
+                       wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-            if (save.ShowModal() != wxID_OK)
-            {
-                m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_ready")));
-                return;
-            }
+                   if (save.ShowModal() != wxID_OK)
+                   {
+                       m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_ready")));
+                       return;
+                   }
 
-            auto sp = evt.GetPayload<StopPayload>();
-            {
-                std::ofstream out(save.GetPath().ToStdString(), std::ios_base::binary);
-                lt::bencode(std::ostream_iterator<char>(out), sp.e);
-            }
+                   auto sp = evt.GetPayload<StopPayload>();
+                   {
+                       std::ofstream out(save.GetPath().ToStdString(), std::ios_base::binary);
+                       lt::bencode(std::ostream_iterator<char>(out), sp.e);
+                   }
 
-            if (m_addToSession->IsChecked())
-            {
-                lt::add_torrent_params p;
-                p.save_path = sp.bp;
-                p.ti = std::make_shared<lt::torrent_info>(save.GetPath().ToStdString());
-                m_session->AddTorrent(p);
-            }
+                   if (m_addToSession->IsChecked())
+                   {
+                       lt::add_torrent_params p;
+                       p.save_path = sp.bp;
+                       p.ti = std::make_shared<lt::torrent_info>(save.GetPath().ToStdString());
+                       m_session->AddTorrent(p);
+                   }
 
-            EndDialog(wxOK);
-        });
+                   EndDialog(wxOK);
+               });
 
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_PROGRESS,
-        [this](wxThreadEvent& evt)
-        {
-            auto pp = evt.GetPayload<ProgressPayload>();
-            m_status->SetLabel(
-                fmt::format(
-                    i18n("status_s"),
-                    fmt::format(
-                        i18n("status_hashing_piece"), pp.currentPiece + 1, pp.totalPieces)));
+               [this](wxThreadEvent &evt)
+               {
+                   auto pp = evt.GetPayload<ProgressPayload>();
+                   m_status->SetLabel(
+                       fmt::format(
+                           i18n("status_s"),
+                           fmt::format(
+                               i18n("status_hashing_piece"), pp.currentPiece + 1, pp.totalPieces)));
 
-            float progress = 0;
+                   float progress = 0;
 
-            if (pp.currentPiece > 0)
-            {
-                progress = (pp.currentPiece + 1) / float(pp.totalPieces);
-            }
+                   if (pp.currentPiece > 0)
+                   {
+                       progress = (pp.currentPiece + 1) / float(pp.totalPieces);
+                   }
 
-            m_progress->SetValue(static_cast<int>(progress * 100));
-        });
+                   m_progress->SetValue(static_cast<int>(progress * 100));
+               });
 
-    this->Bind(wxEVT_TEXT, [this](wxCommandEvent&) { UpdateState(); }, ptID_TXT_PATH);
+    this->Bind(
+        wxEVT_TEXT, [this](wxCommandEvent &)
+        { UpdateState(); },
+        ptID_TXT_PATH);
 }
 
 CreateTorrentDialog::~CreateTorrentDialog()
 {
-    if (m_worker.joinable()) { m_worker.join(); }
+    if (m_worker.joinable())
+    {
+        m_worker.join();
+    }
 }
 
 void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p)
@@ -267,8 +283,14 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     wxQueueEvent(this, new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_START));
 
     lt::create_flags_t flags = {};
-    if (p->mode == Mode::v1) { flags = lt::create_torrent::v1_only; }
-    if (p->mode == Mode::v2) { flags = lt::create_torrent::v2_only; }
+    if (p->mode == Mode::v1)
+    {
+        flags = lt::create_torrent::v1_only;
+    }
+    if (p->mode == Mode::v2)
+    {
+        flags = lt::create_torrent::v2_only;
+    }
 
     lt::file_storage fs;
     lt::add_files(fs, p->path, flags);
@@ -325,7 +347,7 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     {
         e = ct.generate();
     }
-    catch (const std::exception& ex)
+    catch (const std::exception &ex)
     {
         BOOST_LOG_TRIVIAL(error) << "Error when generating torrent: " << ec;
         auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
@@ -344,28 +366,34 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     wxQueueEvent(this, sevt);
 }
 
-void CreateTorrentDialog::OnBrowsePath(wxCommandEvent& evt)
+void CreateTorrentDialog::OnBrowsePath(wxCommandEvent &evt)
 {
     switch (evt.GetId())
     {
     case ptID_BTN_BROWSE_DIR:
     {
         wxDirDialog dlg(this);
-        if (dlg.ShowModal() != wxID_OK) { return; }
+        if (dlg.ShowModal() != wxID_OK)
+        {
+            return;
+        }
         m_path->SetValue(dlg.GetPath());
         break;
     }
     case ptID_BTN_BROWSE_FILE:
     {
         wxFileDialog dlg(this);
-        if (dlg.ShowModal() != wxID_OK) { return; }
+        if (dlg.ShowModal() != wxID_OK)
+        {
+            return;
+        }
         m_path->SetValue(dlg.GetPath());
         break;
     }
     }
 }
 
-void CreateTorrentDialog::OnCreateTorrent(wxCommandEvent&)
+void CreateTorrentDialog::OnCreateTorrent(wxCommandEvent &)
 {
     fs::path p = m_path->GetValue().ToStdWstring();
 
@@ -386,19 +414,28 @@ void CreateTorrentDialog::OnCreateTorrent(wxCommandEvent&)
 
     {
         wxStringTokenizer tokenizer(m_trackers->GetValue());
-        while (tokenizer.HasMoreTokens()) { params->trackers.push_back(tokenizer.GetNextToken().ToStdString()); }
+        while (tokenizer.HasMoreTokens())
+        {
+            params->trackers.push_back(tokenizer.GetNextToken().ToStdString());
+        }
     }
 
     {
         wxStringTokenizer tokenizer(m_urlSeeds->GetValue());
-        while (tokenizer.HasMoreTokens()) { params->url_seeds.push_back(tokenizer.GetNextToken().ToStdString()); }
+        while (tokenizer.HasMoreTokens())
+        {
+            params->url_seeds.push_back(tokenizer.GetNextToken().ToStdString());
+        }
     }
 
     // wait for previous run to join before starting new. this shouldn't
     // happen since we disable the button when the worker starts and
     // enable it last thing before it ends
 
-    if (m_worker.joinable()) { m_worker.join(); }
+    if (m_worker.joinable())
+    {
+        m_worker.join();
+    }
     m_worker = std::thread(&CreateTorrentDialog::GenerateTorrent, this, std::move(params));
     this->SetCursor(wxCURSOR_WAIT);
 }

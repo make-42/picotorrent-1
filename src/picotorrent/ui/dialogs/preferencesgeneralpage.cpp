@@ -7,17 +7,21 @@
 #include "../../core/configuration.hpp"
 #include "../../core/utils.hpp"
 #include "../clientdata.hpp"
-#include "../theming/theming.hpp"
 #include "../translator.hpp"
 
-struct AutoRunKey {
-  AutoRunKey() {
+#include "../theming/theming.hpp"
+
+struct AutoRunKey
+{
+  AutoRunKey()
+  {
     RegCreateKeyEx(HKEY_CURRENT_USER,
                    TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"), 0,
                    NULL, 0, KEY_READ | KEY_WRITE, NULL, &m_key, NULL);
   }
 
-  void Create() {
+  void Create()
+  {
     TCHAR path[MAX_PATH];
     TCHAR quoted[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
@@ -29,7 +33,8 @@ struct AutoRunKey {
         RegSetValueEx(m_key, L"PicoTorrent", 0, REG_SZ, (const BYTE *)p.c_str(),
                       (DWORD)((p.size() + 1) * sizeof(wchar_t)));
 
-    if (res != ERROR_SUCCESS) {
+    if (res != ERROR_SUCCESS)
+    {
       BOOST_LOG_TRIVIAL(warning)
           << "PicoTorrent could not be registered to run at start-up. Error: "
           << GetLastError();
@@ -38,14 +43,17 @@ struct AutoRunKey {
 
   void Delete() { RegDeleteValue(m_key, TEXT("PicoTorrent")); }
 
-  bool Exists() {
+  bool Exists()
+  {
     return RegQueryValueEx(m_key, TEXT("PicoTorrent"), NULL, NULL, NULL,
                            NULL) == ERROR_SUCCESS;
     ;
   }
 
-  ~AutoRunKey() {
-    if (m_key != NULL) {
+  ~AutoRunKey()
+  {
+    if (m_key != NULL)
+    {
       RegCloseKey(m_key);
     }
   }
@@ -59,7 +67,8 @@ using pt::UI::Dialogs::PreferencesGeneralPage;
 
 PreferencesGeneralPage::PreferencesGeneralPage(
     wxWindow *parent, std::shared_ptr<pt::Core::Configuration> cfg)
-    : wxPanel(parent), m_cfg(cfg) {
+    : wxPanel(parent), m_cfg(cfg)
+{
   wxStaticBoxSizer *uiSizer =
       new wxStaticBoxSizer(wxVERTICAL, this, i18n("user_interface"));
   wxFlexGridSizer *uiGrid = new wxFlexGridSizer(2, FromDIP(10), FromDIP(10));
@@ -131,20 +140,24 @@ PreferencesGeneralPage::PreferencesGeneralPage(
 
   this->SetSizerAndFit(sizer);
 
-  for (auto &lang : Translator::GetInstance().Languages()) {
+  for (auto &lang : Translator::GetInstance().Languages())
+  {
     int pos =
         m_language->Append(lang.name, new ClientData<std::string>(lang.locale));
 
-    if (lang.locale == Translator::GetInstance().GetLocale()) {
+    if (lang.locale == Translator::GetInstance().GetLocale())
+    {
       m_language->SetSelection(pos);
     }
   }
 
-  for (auto &theme : pt::UI::Theming::GetInstance().GetThemes()) {
+  for (auto &theme : pt::UI::Theming::GetInstance().GetThemes())
+  {
     int pos =
         m_theme->Append(theme.name, new ClientData<std::string>(theme.id));
 
-    if (theme.id == Theming::GetInstance().GetCurrentTheme()) {
+    if (theme.id == Theming::GetInstance().GetCurrentTheme())
+    {
       m_theme->SetSelection(pos);
     }
   }
@@ -154,7 +167,8 @@ PreferencesGeneralPage::PreferencesGeneralPage(
       m_cfg->Get<bool>("skip_add_torrent_dialog").value());
 
   AutoRunKey key;
-  if (key.Exists()) {
+  if (key.Exists())
+  {
     m_autoStart->SetValue(true);
   }
 
@@ -180,10 +194,10 @@ PreferencesGeneralPage::PreferencesGeneralPage(
   m_closeNotification->SetValue(
       m_cfg->Get<bool>("close_to_notification_area").value());
 
-  m_showNotificationIcon->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &) {
+  m_showNotificationIcon->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent &)
+                               {
     m_minimizeNotification->Enable(m_showNotificationIcon->IsChecked());
-    m_closeNotification->Enable(m_showNotificationIcon->IsChecked());
-  });
+    m_closeNotification->Enable(m_showNotificationIcon->IsChecked()); });
 
   m_minimizeNotification->Enable(m_showNotificationIcon->IsChecked());
   m_closeNotification->Enable(m_showNotificationIcon->IsChecked());
@@ -193,7 +207,8 @@ PreferencesGeneralPage::~PreferencesGeneralPage() {}
 
 bool PreferencesGeneralPage::IsValid() { return true; }
 
-void PreferencesGeneralPage::Save(bool *restartRequired) {
+void PreferencesGeneralPage::Save(bool *restartRequired)
+{
   int langIndex = m_language->GetSelection();
   ClientData<std::string> *langData =
       langIndex >= 0 ? reinterpret_cast<ClientData<std::string> *>(
@@ -211,34 +226,41 @@ void PreferencesGeneralPage::Save(bool *restartRequired) {
       reinterpret_cast<ClientData<Configuration::WindowState> *>(
           m_startPosition->GetClientObject(startPosIndex));
 
-  if (langData != nullptr) {
-    if (langData->GetValue() != m_cfg->Get<std::string>("locale_name")) {
+  if (langData != nullptr)
+  {
+    if (langData->GetValue() != m_cfg->Get<std::string>("locale_name"))
+    {
       *restartRequired = true;
     }
 
     m_cfg->Set("locale_name", langData->GetValue());
   }
 
-  if (themeData != nullptr) {
-    if (themeData->GetValue() != m_cfg->Get<std::string>("theme_id")) {
+  if (themeData != nullptr)
+  {
+    if (themeData->GetValue() != m_cfg->Get<std::string>("theme_id"))
+    {
       *restartRequired = true;
     }
 
     m_cfg->Set("theme_id", themeData->GetValue());
   }
 
-  if (startPosData != nullptr) {
+  if (startPosData != nullptr)
+  {
     m_cfg->Set("start_position", static_cast<int>(startPosData->GetValue()));
   }
 
   {
     AutoRunKey key;
 
-    if (key.Exists() && !m_autoStart->GetValue()) {
+    if (key.Exists() && !m_autoStart->GetValue())
+    {
       key.Delete();
     }
 
-    if (!key.Exists() && m_autoStart->GetValue()) {
+    if (!key.Exists() && m_autoStart->GetValue())
+    {
       key.Create();
     }
   }

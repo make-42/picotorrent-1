@@ -12,10 +12,10 @@
 using pt::UI::TorrentDetailsPeersPanel;
 using pt::UI::Models::PeerListModel;
 
-TorrentDetailsPeersPanel::TorrentDetailsPeersPanel(wxWindow* parent, wxWindowID id)
+TorrentDetailsPeersPanel::TorrentDetailsPeersPanel(wxWindow *parent, wxWindowID id)
     : wxPanel(parent, id),
-    m_peersView(new wxDataViewCtrl(this, wxID_ANY)),
-    m_peersModel(new PeerListModel())
+      m_peersView(new wxDataViewCtrl(this, wxID_ANY)),
+      m_peersModel(new PeerListModel())
 {
     m_peersView->AppendTextColumn(i18n("ip"), PeerListModel::Column::IP, wxDATAVIEW_CELL_INERT, FromDIP(110));
     m_peersView->AppendTextColumn(i18n("client"), PeerListModel::Column::Client, wxDATAVIEW_CELL_INERT, FromDIP(140));
@@ -35,7 +35,7 @@ TorrentDetailsPeersPanel::TorrentDetailsPeersPanel(wxWindow* parent, wxWindowID 
     this->SetSizerAndFit(mainSizer);
 }
 
-void TorrentDetailsPeersPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsPeersPanel::Refresh(pt::BitTorrent::TorrentHandle *torrent)
 {
     if (!torrent->IsValid())
     {
