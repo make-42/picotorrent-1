@@ -14,6 +14,8 @@
 #include "translator.hpp"
 #include "widgets/pieceprogressbar.hpp"
 
+#include "theming/theming.hpp"
+
 using pt::UI::TorrentDetailsOverviewPanel;
 
 static wxStaticText* BoldLabel(wxWindow* parent, wxWindowID id, wxString const& text)
@@ -22,6 +24,8 @@ static wxStaticText* BoldLabel(wxWindow* parent, wxWindowID id, wxString const& 
     auto f = s->GetFont();
     f.SetWeight(wxFONTWEIGHT_BOLD);
     s->SetFont(f);
+    s->SetBackgroundColour(pt::UI::Theming::GetBackgroundColour());
+    s->SetForegroundColour(pt::UI::Theming::GetForegroundColour());
     return s;
 }
 

@@ -43,6 +43,8 @@
 
 #include "win32/openfiledialog.hpp"
 
+#include "theming/theming.hpp"
+
 namespace fs = std::filesystem;
 using pt::UI::MainFrame;
 
@@ -76,7 +78,17 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
     m_splitter->SplitHorizontally(
         m_torrentList,
         m_torrentDetails);
-
+    
+    // Add dark mode
+    m_splitter->SetBackgroundColour(pt::UI::Theming::GetBackgroundColour());
+    m_splitter->SetForegroundColour(pt::UI::Theming::GetForegroundColour());
+    m_statusBar->SetBackgroundColour(pt::UI::Theming::GetBackgroundColour());
+    m_statusBar->SetForegroundColour(pt::UI::Theming::GetForegroundColour());
+        m_torrentDetails->SetBackgroundColour(pt::UI::Theming::GetBackgroundColour());
+    m_torrentDetails->SetForegroundColour(pt::UI::Theming::GetForegroundColour());
+        m_torrentList->SetBackgroundColour(pt::UI::Theming::GetBackgroundColour());
+    m_torrentList->SetForegroundColour(pt::UI::Theming::GetForegroundColour());
+    
     m_torrentListModel->SetBackgroundColorEnabled(
         m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 

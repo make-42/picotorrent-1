@@ -25,7 +25,7 @@ TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id, std::sha
     this->AddPage(m_peers,    i18n("peers"));
     this->AddPage(m_trackers, i18n("trackers"));
     this->ReloadConfiguration();
-}
+   }
 
 TorrentDetailsView::~TorrentDetailsView()
 {
