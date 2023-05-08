@@ -7,37 +7,34 @@
 
 #include <memory>
 
-namespace pt
-{
-namespace Core
-{
-    class Configuration;
+namespace pt {
+namespace Core {
+class Configuration;
 }
-namespace UI
-{
-namespace Dialogs
-{
-    class PreferencesGeneralPage : public wxPanel
-    {
-    public:
-        PreferencesGeneralPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg);
-        virtual ~PreferencesGeneralPage();
+namespace UI {
+namespace Dialogs {
+class PreferencesGeneralPage : public wxPanel {
+public:
+  PreferencesGeneralPage(wxWindow *parent,
+                         std::shared_ptr<Core::Configuration> cfg);
+  virtual ~PreferencesGeneralPage();
 
-        bool IsValid();
-        void Save(bool* restartRequired);
+  bool IsValid();
+  void Save(bool *restartRequired);
 
-    private:
-        std::shared_ptr<Core::Configuration> m_cfg;
+private:
+  std::shared_ptr<Core::Configuration> m_cfg;
 
-        wxChoice* m_language;
-        wxCheckBox* m_labelColor;
-        wxCheckBox* m_skipAddTorrentDialog;
-        wxCheckBox* m_autoStart;
-        wxChoice* m_startPosition;
-        wxCheckBox* m_showNotificationIcon;
-        wxCheckBox* m_minimizeNotification;
-        wxCheckBox* m_closeNotification;
-    };
-}
-}
-}
+  wxChoice *m_language;
+  wxChoice *m_theme;
+  wxCheckBox *m_labelColor;
+  wxCheckBox *m_skipAddTorrentDialog;
+  wxCheckBox *m_autoStart;
+  wxChoice *m_startPosition;
+  wxCheckBox *m_showNotificationIcon;
+  wxCheckBox *m_minimizeNotification;
+  wxCheckBox *m_closeNotification;
+};
+} // namespace Dialogs
+} // namespace UI
+} // namespace pt
